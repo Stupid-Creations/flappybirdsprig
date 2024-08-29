@@ -10,10 +10,11 @@ https://sprig.hackclub.com/gallery/getting_started
 
 const player = "p";
 const pipe = "P";
+const upsidedown = "U"
 const tail = "T";
 
 setLegend(
-  [ player, bitmap`
+  [player, bitmap`
 ................
 ................
 ................
@@ -46,7 +47,7 @@ setLegend(
 ...0DD4444440...
 ...0DD4444440...
 ...0DD4444440...
-...0DD4444440...`], [tail,bitmap`
+...0DD4444440...`], [tail, bitmap`
 ...0DD4444440...
 ...0DD4444440...
 ...0DD4444440...
@@ -62,85 +63,131 @@ setLegend(
 ...0DD4444440...
 ...0DD4444440...
 ...0DD4444440...
-...0DD4444440...`] 
+...0DD4444440...`], [upsidedown, bitmap`
+...0DD4444440...
+...0DD4444440...
+...0DD4444440...
+...0DD4444440...
+...0DD4444440...
+...0DD4444440...
+...0DD4444440...
+...0DD4444440...
+...0DD4444440...
+...0DD4444440...
+...0000000000...
+..000000000000..
+..00DD44442400..
+..00D444424400..
+..00D444424400..
+..004444444400..`]
 );
 
 
-
+let score = 0
 let level = 0
 const levels = [
   map`
 .....
 .....
-.....
 p....
 .....
 .....
-.....
-.....
-.....`
+.....`,map `
+......
+......
+......
+......
+...P..
+..pT..`
 ]
 
 setMap(levels[level])
 
-const spawnPipes = () => {
-  console.log('a')
-  yes = Math.random(0,1);
-  if(yes > 0.3){
-    ch2ser = Math.random(0,1);
-    if (ch2ser > 0.5){
-      y = 8 - Math.round(Math.random(0,4));
-    }else{
-      y = 0 + Math.round(Math.random(0,4));
-    }
-        addSprite(4,y,pipe);
-    if (y > 0 && y < 3){
-      for(i = 0; i < y; i++){
-        addSprite(4,i,tail);
-      }
-    }else
-    if(y < 8 && y > 2){
-              console.log("ouch")
-
-      for(j = 8; j < y; j --){
-        addSprite(4,j,tail);
-      }
-    }
-  }
-}
-
-const updatePipes = () => {
-   console.log(getAll(pipe))
-   console.log('b')
-  if(getAll(pipe).length > 0){
-  for(i = 0; i < getAll(pipe).length;i ++){
-    if(getAll(pipe)[i].x === 0){
-      getAll(pipe)[i].remove();
-    }
-    getAll(pipe)[i].x -= 1;
-  }
-  }
-  if(getAll(tail).length > 0){
-  for(j = 0; j < getAll(tail).length;j ++){
+const gameLoop = () => {
+  if(level === 0){
+    clearText();
+    getFirst(player).y += 1
+    score+=1;
+      for (j = 0; j < getAll(tail).length; j++) {
     if(getAll(tail)[j].x === 0){
       getAll(tail)[j].remove();
     }
+  }
+    for (j = 0; j < getAll(pipe).length; j++) {
+    if(getAll(pipe)[j].x === 0){
+      getAll(pipe)[j].remove();
+    }
+  }
+  for (j = 0; j < getAll(upsidedown).length; j++) {
+    if(getAll(upsidedown)[j].x === 0){
+      getAll(upsidedown)[j].remove();
+    }
+  }
+  for (j = 0; j < getAll(tail).length; j++) {
     getAll(tail)[j].x -= 1;
+  }
+  for (i = 0; i < getAll(pipe).length; i++) {
+    getAll(pipe)[i].x -= 1;
+  }
+  for (i = 0; i < getAll(upsidedown).length; i++) {
+    getAll(upsidedown)[i].x -= 1;
+  }
+
+  yes = Math.random(0, 1);
+  if (yes) {
+    ch2ser = Math.random(0, 1);
+    if (ch2ser > 0.5) {
+      y = 5 - Math.floor(Math.random()*2);
+      addSprite(4, y, pipe);
+
+    } else {
+      y = 0 + Math.floor(Math.random()*2);
+      addSprite(4, y, upsidedown);
+
+    }
+
+    if (y > 0 && y < 2) {
+      for (i = 0; i < y; i++) {
+        addSprite(4, i, tail);
+      }
+    } else
+    if (y > 2) {
+      for (j = 5; j > y; j--) {
+        addSprite(4, j, tail);
+      }
+    }
+  }
+  if(tilesWith(player,pipe).length > 0){
+    level = 1;
+    setMap(levels[level])
+    addText(" game over\n\ns to restart\n\n score: "+score,{x:5,y:3})
+  }
+      if(tilesWith(player,tail).length > 0){
+    level = 1;
+    setMap(levels[level])
+    addText(" game over\n\ns to restart\n\n score: "+score,{x:5,y:3})
+  }
+      if(tilesWith(player,upsidedown).length > 0){
+    level = 1;
+    setMap(levels[level])
+    addText(" game over\n\ns to restart\n\n score: "+score,{x:5,y:3})
   }
   }
 }
 
-setInterval(updatePipes,1000);
-setInterval(spawnPipes,1000);
+setInterval(gameLoop, 1000);
 
-setPushables({
-  [ player ]: []
+
+
+onInput("w", () => {
+  if(level===0){
+  getFirst(player).y -= 1
+  }
 })
 
 onInput("s", () => {
-  getFirst(player).y += 1
-})
-
-afterInput(() => {
-  
-})
+  if(level === 1){
+    level = 0;
+    score = 0;
+    setMap(levels[level])
+  }})
